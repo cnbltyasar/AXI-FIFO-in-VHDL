@@ -1,0 +1,86 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity axi_fifo_tb is
+end axi_fifo_tb;
+
+architecture tb of axi_fifo_tb is
+
+  constant ram_width : natural := 8;
+  constant ram_depth : natural := 16;
+
+  signal clk : std_logic := '0';
+  signal rst : std_logic := '1';
+  
+  signal in_ready : std_logic;
+  signal in_valid : std_logic := '0';
+  signal in_data : std_logic_vector(ram_width - 1 downto 0) := (others => '0');
+  
+  signal out_ready : std_logic := '0';
+  signal out_valid : std_logic;
+  signal out_data : std_logic_vector(ram_width - 1 downto 0);
+
+  -- Clock generation
+  constant clk_period : time := 10 ns;
+
+begin
+  
+  -- Instantiate DUT
+  uut: entity work.axi_fifo
+    generic map (
+      ram_width => ram_width,
+      ram_depth => ram_depth
+    )
+    port map (
+      clk => clk,
+      rst => rst,
+      in_ready => in_ready,
+      in_valid => in_valid,
+      in_data => in_data,
+      out_ready => out_ready,
+      out_valid => out_valid,
+      out_data => out_data
+    );
+  
+  -- Clock process
+  clk_process: process
+  begin
+    while true loop
+      clk <= '0';
+      wait for clk_period / 2;
+      clk <= '1';
+      wait for clk_period / 2;
+    end loop;
+  end process;
+
+  -- Test process
+  test_process: process
+  begin
+    
+    -- Reset sequence
+    rst <= '1';
+    wait for 2 * clk_period;
+    rst <= '0';
+    wait for clk_period;
+    
+    -- Write data into FIFO
+    for i in 0 to 7 loop
+      in_data <= std_logic_vector(to_unsigned(i, ram_width));
+      in_valid <= '1';
+      wait until rising_edge(clk);
+      in_valid <= '0';
+      wait for clk_period;
+    end loop;
+    
+    -- Read data from FIFO
+    wait for clk_period;
+    out_ready <= '1';
+    wait for 10 * clk_period;
+    out_ready <= '0';
+    
+    -- Test complete
+    wait;
+  end process;
+
+end tb;
