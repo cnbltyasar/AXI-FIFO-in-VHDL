@@ -1,4 +1,7 @@
 # AXI-FIFO-in-VHDL
+![image](https://github.com/user-attachments/assets/85a0d2b3-3d2e-4124-a27e-92ad85d93551)
+
+
 # AXI FIFO State Diagram
 
 ## States
